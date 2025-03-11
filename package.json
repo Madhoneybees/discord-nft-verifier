@@ -1,0 +1,28 @@
+{
+    "name": "nft-role-bot",
+    "version": "1.0.0",
+    "description": "Discord bot for assigning roles based on NFT holdings",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js",
+        "deploy-commands": "node src/discord/deploy-command.js",
+        "admin": "node src/admin/server.js",
+        "dev-admin": "nodemon src/admin/server.js"
+    },
+    "dependencies": {
+        "bootstrap": "^5.3.3",
+        "crypto": "^1.0.1",
+        "discord.js": "^14.11.0",
+        "dotenv": "^16.0.3",
+        "ejs": "^3.1.10",
+        "ethers": "^6.13.5",
+        "express": "^4.21.2",
+        "express-session": "^1.18.1",
+        "firebase": "^10.10.0",
+        "node-cron": "^3.0.2"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.22"
+    }
+}

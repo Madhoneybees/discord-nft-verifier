@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT Verification Dashboard</title>
+    <!-- Bootstrap CDN (no local dependencies) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            font-weight: bold;
+            background-color: #6c5ce7;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6c5ce7;
+        }
+        .stats-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .nft-count {
+            font-weight: bold;
+            color: #6c5ce7;
+        }
+        #verificationBtn {
+            background-color: #6c5ce7;
+            border-color: #6c5ce7;
+        }
+        #verificationBtn:hover {
+            background-color: #5549d6;
+            border-color: #5549d6;
+        }
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        #statusAlert {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="text-center mb-4">NFT Verification Dashboard</h1>
+                <div class="text-center mb-4">
+                    <button id="verificationBtn" class="btn btn-primary">
+                        Run Verification Now
+                    </button>
+                    <button id="refreshBtn" class="btn btn-outline-secondary ms-2">
+                        Refresh Stats
+                    </button>
+                </div>
+                <div id="statusAlert" class="alert alert-info text-center"></div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <!-- Stats Cards -->
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100 text-center">
+                    <div class="card-header">Total Users</div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div id="totalUsers" class="stats-number">-</div>
+                        <div class="stats-label">Discord Users</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100 text-center">
+                    <div class="card-header">Verified Users</div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div id="verifiedUsers" class="stats-number">-</div>
+                        <div class="stats-label">With Wallet Linked</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100 text-center">
+                    <div class="card-header">NFT Holders</div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div id="nftHolders" class="stats-number">-</div>
+                        <div class="stats-label">With 1+ NFTs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100 text-center">
+                    <div class="card-header">Last Updated</div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div id="lastUpdated" class="stats-number" style="font-size: 1.2rem;">-</div>
+                        <div class="stats-label">Local Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- NFT Distribution -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">NFT Distribution</div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>NFTs Owned</th>
+                                    <th>User Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="nftDistribution">
+                                <tr>
+                                    <td colspan="2" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Verifications -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">Recent Verifications</div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Discord ID</th>
+                                    <th>Wallet</th>
+                                    <th>NFTs</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentVerifications">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch dashboard stats on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboardData();
+            
+            // Add event listeners
+            document.getElementById('verificationBtn').addEventListener('click', triggerVerification);
+            document.getElementById('refreshBtn').addEventListener('click', loadDashboardData);
+        });
+
+        // Format wallet address for display (0x1234...5678)
+        function formatWalletAddress(address) {
+            if (!address) return '-';
+            return `${address.slice(0, 6)}...${address.slice(-4)}`;
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusAlert = document.getElementById('statusAlert');
+            statusAlert.textContent = message;
+            statusAlert.className = `alert alert-${type} text-center`;
+            statusAlert.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                statusAlert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Set loading state
+                document.getElementById('totalUsers').textContent = '...';
+                document.getElementById('verifiedUsers').textContent = '...';
+                document.getElementById('nftHolders').textContent = '...';
+                document.getElementById('nftDistribution').innerHTML = '<tr><td colspan="2" class="text-center">Loading...</td></tr>';
+                document.getElementById('recentVerifications').innerHTML = '<tr><td colspan="4" class="text-center">Loading...</td></tr>';
+                
+                // Fetch stats from API
+                const response = await fetch('/api/stats');
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update dashboard stats
+                document.getElementById('totalUsers').textContent = data.total_users || 0;
+                document.getElementById('verifiedUsers').textContent = data.verified_users || 0;
+                
+                // Calculate NFT holders (users with at least 1 NFT)
+                let nftHolders = 0;
+                const distribution = data.nft_distribution || {};
+                
+                Object.keys(distribution).forEach(count => {
+                    if (parseInt(count) > 0) {
+                        nftHolders += distribution[count];
+                    }
+                });
+                
+                document.getElementById('nftHolders').textContent = nftHolders;
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+                
+                // Update NFT distribution table
+                const distributionTable = document.getElementById('nftDistribution');
+                distributionTable.innerHTML = '';
+                
+                // Sort by NFT count
+                const sortedCounts = Object.keys(distribution).sort((a, b) => parseInt(a) - parseInt(b));
+                
+                if (sortedCounts.length === 0) {
+                    distributionTable.innerHTML = '<tr><td colspan="2" class="text-center">No data</td></tr>';
+                } else {
+                    sortedCounts.forEach(count => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${count} NFT${count !== '1' ? 's' : ''}</td>
+                            <td>${distribution[count]} user${distribution[count] !== 1 ? 's' : ''}</td>
+                        `;
+                        distributionTable.appendChild(row);
+                    });
+                }
+                
+                // Update recent verifications table
+                const recentTable = document.getElementById('recentVerifications');
+                recentTable.innerHTML = '';
+                
+                const recentVerifications = data.recent_verifications || [];
+                
+                if (recentVerifications.length === 0) {
+                    recentTable.innerHTML = '<tr><td colspan="4" class="text-center">No recent verifications</td></tr>';
+                } else {
+                    recentVerifications.forEach(verification => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${verification.id.substring(0, 10)}...</td>
+                            <td>${formatWalletAddress(verification.wallet)}</td>
+                            <td class="nft-count">${verification.nft_count}</td>
+                            <td>${formatDate(verification.date)}</td>
+                        `;
+                        recentTable.appendChild(row);
+                    });
+                }
+                
+                showStatus('Dashboard data updated', 'success');
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showStatus('Error loading dashboard data', 'danger');
+            }
+        }
+
+        // Trigger verification job
+        async function triggerVerification() {
+            try {
+                // Set button loading state
+                const button = document.getElementById('verificationBtn');
+                button.textContent = 'Running...';
+                button.classList.add('loading');
+                button.disabled = true;
+                
+                showStatus('Running verification job... This may take a while.', 'info');
+                
+                // Call verification API
+                const response = await fetch('/api/trigger-verification', {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update dashboard with results
+                showStatus(`Verification completed: ${data.updated} updated, ${data.unchanged} unchanged, ${data.failed} failed`, 'success');
+                
+                // Refresh dashboard data
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error triggering verification:', error);
+                showStatus('Error triggering verification job', 'danger');
+            } finally {
+                // Reset button state
+                const button = document.getElementById('verificationBtn');
+                button.textContent = 'Run Verification Now';
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

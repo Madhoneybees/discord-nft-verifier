@@ -1,0 +1,58 @@
+{
+    "roles": [
+      {
+        "name": "Mad Whale",
+        "minNFTs": 100,
+        "discordRoleId": "1332302531765866537",
+        "description": "The ultimate degen. You've risen to the very top, a Mad Kingpin."
+      },
+      {
+        "name": "Bearzerker",
+        "minNFTs": 50,
+        "discordRoleId": "1332310164795293756",
+        "description": "You've embraced pure chaos, a berserk force of nature ripping through the Berachain jungle."
+      },
+      {
+        "name": "Alpha Bear",
+        "minNFTs": 20,
+        "discordRoleId": "1332322885813141574",
+        "description": "You're not just a degen—you're an Alpha. The charts bend to your will."
+      },
+      {
+        "name": "Chaos Bear",
+        "minNFTs": 10,
+        "discordRoleId": "1332322815004905548",
+        "description": "The Grinder. You've embraced the madness and are here to farm, trade, and stack relentlessly."
+      },
+      {
+        "name": "VIB",
+        "minNFTs": 5,
+        "discordRoleId": "1329119065343660042",
+        "description": "Very Important Beras."
+      },
+      {
+        "name": "Mad Bear",
+        "minNFTs": 1,
+        "discordRoleId": "1327281276792864780",
+        "description": "Mad Bear Holder Role."
+      }
+    ],
+    "verification": {
+      "scheduleInterval": "0 */6 * * *",
+      "batchSize": 10,
+      "batchDelay": 2000
+    },
+    "collection": {
+      "contractAddress": "0xFf813D6121142Db3A0545C67E4c047d51061F736",
+      "chain": "berachain"
+    },
+    "networks": {
+      "berachain": {
+        "chainId": "80085",
+        "rpcUrl": "https://rpc.berachain.com",
+        "explorerUrl": "https://explorer.berachain.com",
+        "name": "Berachain Mainnet"
+      }
+      
+    }
+  }

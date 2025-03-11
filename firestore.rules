@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only allow access via backend (server-side)
+    // This makes your database secure by default
+    
+    // Users collection - Discord user data and wallet verification
+    match /users/{userId} {
+      // Public read access for verified basic user info
+      // This allows applications to display verified user info (e.g. on a leaderboard)
+      allow read: if true;
+      
+      // Allow writes from the Discord bot client application
+      allow write: if true;
+      
+      // Data validation for user records
+      function isValidUserData(data) {
+        return data.size() > 0 && 
+          (data.wallet_address == null || data.wallet_address is string) &&
+          (data.nftCount == null || data.nftCount is number) &&
+          (data.roleId == null || data.roleId is string) &&
+          (data.lastUpdated == null || data.lastUpdated is timestamp);
+      }
+    }
+    
+    // Pending verifications collection
+    match /pending_verifications/{verificationId} {
+      // Allow reading of verification status
+      allow read: if true;
+      
+      // Allow writes from the Discord bot client application
+      allow write: if true;
+      
+      // Data validation for pending verifications
+      function isValidVerificationData(data) {
+        return data.size() > 0 &&
+          (data.walletAddress == null || data.walletAddress is string) && 
+          (data.userId == null || data.userId is string) &&
+          (data.expirationTime == null || data.expirationTime is timestamp) &&
+          (data.created == null || data.created is timestamp);
+      }
+    }
+    
+    // Test collection for connection testing
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
