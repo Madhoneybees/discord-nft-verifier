@@ -1,6 +1,6 @@
-# Mad Bears NFT Verification Bot
+# NFT Verification Bot
 
-A Discord bot for the Mad Bears community that automatically verifies NFT ownership on Berachain and assigns appropriate Discord roles based on holdings.
+A Discord bot for the Mad Bears community that automatically verifies NFT ownership on Berachain and assigns appropriate Discord roles based on holdings. The bot can be configured for any NFT collection on EVM chains. Extending functionality can be achieved with ease. 
 
 ## 🚀 Features
 
